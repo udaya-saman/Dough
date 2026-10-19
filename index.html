@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dough Timing</title>
+<meta name="theme-color" content="#E21F26">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dough Timing">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23E21F26'/%3E%3Ctext x='50' y='70' font-size='60' text-anchor='middle'%3E%F0%9F%8D%95%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --item:56px;
+  --red:#E21F26; --red-d:#A90F16; --gold:#FFC72C;
+  --ink:#1D1A1A; --muted:#756C6C; --bg:#F4F2F1; --card:#FFFFFF; --line:#E8E3E1;
+  --tint:rgba(226,31,38,.09);
+}
+@media (prefers-color-scheme:dark){
+  :root{--ink:#F6F1EF; --muted:#A79D9B; --bg:#141111; --card:#221D1D; --line:#372F2F; --tint:rgba(226,31,38,.2)}
+}
+@media (max-height:700px){:root{--item:48px}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+button{font:inherit;touch-action:manipulation;cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+header{background:linear-gradient(160deg,var(--red) 0%,var(--red-d) 100%);color:#fff;
+  padding:calc(env(safe-area-inset-top,0px) + 22px) 22px 64px;border-radius:0 0 32px 32px}
+header h1{margin:0;font-size:30px;font-weight:900;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+header h1 i{font-style:normal;background:var(--gold);width:42px;height:42px;border-radius:14px;
+  display:grid;place-items:center;font-size:24px}
+header p{margin:8px 0 0;opacity:.9;font-size:15px}
+main{max-width:480px;margin:-40px auto 0;padding:0 16px calc(env(safe-area-inset-bottom,0px) + 32px)}
+.card{background:var(--card);border-radius:26px;padding:14px 12px 10px;box-shadow:0 10px 30px rgba(0,0,0,.09)}
+.top{display:flex;justify-content:space-between;align-items:center;padding:0 8px 4px}
+.top span{font-weight:700;font-size:16px}
+.now{border:0;background:var(--tint);color:var(--red);font-weight:700;font-size:14px;padding:9px 14px;border-radius:999px}
+@media (prefers-color-scheme:dark){.now{color:#FF6B70}}
+.picker{position:relative;display:flex;justify-content:center;align-items:center;gap:2px}
+.wheel{height:calc(var(--item)*5);width:96px;padding:calc(var(--item)*2) 0;overflow-y:auto;
+  scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain;touch-action:pan-y;
+  -webkit-mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent);
+  mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent)}
+.wheel::-webkit-scrollbar{display:none}
+.item{height:var(--item);display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:800;
+  font-variant-numeric:tabular-nums;scroll-snap-align:center;scroll-snap-stop:always;user-select:none;cursor:pointer}
+.colon{font-size:42px;font-weight:900;color:var(--red);padding-bottom:6px;z-index:1}
+.band{position:absolute;left:8px;right:8px;top:50%;height:var(--item);transform:translateY(-50%);
+  background:var(--tint);border:2px solid var(--red);border-radius:18px;pointer-events:none}
+.actions{display:flex;gap:12px;margin:18px 0 6px}
+.go{flex:1;height:68px;border:0;border-radius:22px;color:#fff;font-size:24px;font-weight:900;letter-spacing:.14em;
+  background:linear-gradient(160deg,var(--red),var(--red-d));box-shadow:0 10px 22px rgba(226,31,38,.38);
+  transition:transform .1s}
+.go:active{transform:scale(.97)}
+.edit{width:68px;height:68px;border-radius:22px;border:2px solid var(--red);background:var(--card);
+  display:grid;place-items:center;color:var(--red)}
+.edit svg{width:28px;height:28px}
+@media (prefers-color-scheme:dark){.edit{color:#FF6B70;border-color:#FF6B70}}
+#res{margin-top:22px;display:none}
+#res.on{display:block}
+#res h2{font-size:18px;margin:0 4px 12px;font-weight:800}
+#res h2 small{color:var(--muted);font-weight:600;font-size:15px;margin-left:6px}
+.list{display:grid;gap:10px;transition:opacity .2s}
+.stale .list{opacity:.35}
+.hint{display:none;margin:0 4px 10px;color:var(--red);font-weight:700;font-size:14px}
+.stale .hint{display:block}
+.r{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--card);
+  border-radius:20px;padding:14px 16px 14px 18px;border-left:7px solid var(--red);box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.r b{display:block;font-size:21px;font-weight:800}
+.r small{color:var(--muted);font-size:14px;font-weight:600}
+.t{font-size:32px;font-weight:900;letter-spacing:-.02em;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.t em{display:block;font-style:normal;font-size:12px;font-weight:800;background:var(--gold);color:#3A2A00;
+  border-radius:999px;padding:2px 9px;margin-top:2px;width:max-content;margin-left:auto}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .25s;z-index:5}
+.ov.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;max-height:90dvh;overflow:auto;
+  background:var(--bg);border-radius:28px 28px 0 0;padding:20px 16px calc(env(safe-area-inset-bottom,0px) + 18px);
+  transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);z-index:6}
+.sheet.on{transform:none}
+.sheet h3{margin:0 4px 4px;font-size:22px;font-weight:900}
+.sheet>p{margin:0 4px 14px;color:var(--muted);font-size:14px}
+.d{background:var(--card);border-radius:18px;padding:12px 14px;margin-bottom:10px}
+.d .n{font-weight:800;font-size:18px;margin-bottom:8px}
+.ctl{display:flex;gap:10px}
+.g{flex:1;min-width:0;display:flex;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.g button{width:42px;height:50px;border:0;background:none;font-size:26px;font-weight:700;color:var(--red);flex:none}
+.g input{flex:1;min-width:0;width:100%;text-align:center;border:0;background:none;font:inherit;font-size:21px;font-weight:800;color:var(--ink);padding:0}
+.g input:focus{outline:none}
+.g .u{font-size:13px;color:var(--muted);font-weight:700;padding-right:6px;flex:none}
+.save-default{width:100%;min-height:52px;margin:6px 0 10px;padding:10px 14px;border:2px solid var(--red);
+  border-radius:16px;background:var(--tint);color:var(--red);font:inherit;font-weight:800}
+@media (prefers-color-scheme:dark){.save-default{color:#FF6B70;border-color:#FF6B70}}
+.foot{display:flex;gap:10px;margin-top:6px}
+.foot button{height:56px;border-radius:18px;font-weight:800;font-size:17px}
+.reset{flex:1;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+.done{flex:2;border:0;background:var(--red);color:#fff}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1><i>🍕</i>Dough Timing</h1>
+  <p>Set the start time, then tap CHANGE.</p>
+</header>
+<main>
+  <section class="card" aria-label="Start time">
+    <div class="top"><span>Start time</span><button class="now" id="now" type="button">Use current time</button></div>
+    <div class="picker">
+      <div class="band"></div>
+      <div class="wheel h" id="wh" aria-label="Hour"></div>
+      <div class="colon">:</div>
+      <div class="wheel m" id="wm" aria-label="Minutes"></div>
+    </div>
+  </section>
+  <div class="actions">
+    <button class="go" id="go" type="button">CHANGE</button>
+    <button class="edit" id="edit" type="button" aria-label="Edit CHANGE values">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>
+    </button>
+  </div>
+  <section id="res" aria-live="polite">
+    <h2>Ready at<small id="from"></small></h2>
+    <p class="hint">Time or values changed. Tap CHANGE to update.</p>
+    <div class="list" id="list"></div>
+  </section>
+</main>
+<div class="ov" id="ov"></div>
+<div class="sheet" id="sheet" role="dialog" aria-label="CHANGE values">
+  <h3>CHANGE values</h3>
+  <p>Hours and minutes added to the start time. Saved on this device.</p>
+  <div id="rows"></div>
+  <button class="save-default" id="saveDefault" type="button">Set current values as default</button>
+  <div class="foot">
+    <button class="reset" id="reset" type="button">Reset defaults</button>
+    <button class="done" id="done" type="button">Done</button>
+  </div>
+</div>
+<script>
+const NAMES=['Large','Medium','Small','Birizza','Cinnamon','GD'];
+const DEF=[160,130,110,75,75,150]; // original factory defaults, in minutes
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+
+function validDurations(a){
+  return Array.isArray(a)&&a.length===NAMES.length&&
+    a.every(x=>Number.isInteger(x)&&x>=0&&x<1440);
+}
+function loadDurations(key){
+  try{
+    const a=JSON.parse(localStorage.getItem(key));
+    return validDurations(a)?a:null;
+  }catch(e){return null}
+}
+let customDefaults=loadDurations('dt_default_dur');
+let dur=loadDurations('dt_dur')||(customDefaults?customDefaults.slice():DEF.slice());
+const save=()=>{try{localStorage.setItem('dt_dur',JSON.stringify(dur))}catch(e){}};
+/* ---------- Alarm-style wheel ---------- */
+let computedKey=null;
+function wheel(el,labels,loop){
+  const n=labels.length,R=loop?5:1;
+  let html='';
+  for(let r=0;r<R;r++)labels.forEach(l=>html+=`<div class="item">${l}</div>`);
+  el.innerHTML=html;
+  const H=()=>el.firstElementChild.offsetHeight;
+  const idx=()=>Math.round(el.scrollTop/H());
+  let t;
+  el.addEventListener('scroll',()=>{
+    clearTimeout(t);t=setTimeout(()=>{
+      if(loop){const i=idx();if(i<n||i>=4*n)el.scrollTop=(2*n+i%n)*H()}
+      checkStale();
+    },140)
+  },{passive:true});
+  el.addEventListener('click',e=>{
+    const it=e.target.closest('.item');if(!it)return;
+    el.scrollTo({top:[...el.children].indexOf(it)*H(),behavior:'smooth'});
+  });
+  return{get:()=>idx()%n,set:v=>{el.scrollTop=((loop?2*n:0)+v)*H()}};
+}
+const wh=wheel($('wh'),Array.from({length:24},(_,i)=>pad(i)),true);
+const wm=wheel($('wm'),Array.from({length:60},(_,i)=>pad(i)),true);
+function setNow(){
+  const d=new Date();
+  wh.set(d.getHours());
+  wm.set(d.getMinutes());
+}
+const baseMin=()=>wh.get()*60+wm.get();
+const fmt=t=>`${pad(Math.floor(t/60)%24)}:${pad(t%60)}`;
+const hm=d=>{const h=Math.floor(d/60),m=d%60;return(h?h+'h ':'')+(m?m+'m':'')||'0m'};
+const key=()=>baseMin()+'|'+dur.join(',');
+/* ---------- CHANGE ---------- */
+function calc(){
+  const base=baseMin();
+  $('from').textContent='from '+fmt(base);
+  $('list').innerHTML=NAMES.map((nm,i)=>{
+    const tot=base+dur[i],day=Math.floor(tot/1440);
+    return`<div class="r"><div><b>${nm}</b><small>+${hm(dur[i])}</small></div><div class="t">${fmt(tot%1440)}${day?`<em>next day</em>`:''}</div></div>`;
+  }).join('');
+  $('res').classList.add('on');
+  $('res').classList.remove('stale');
+  computedKey=key();
+}
+function checkStale(){
+  if(computedKey!==null)$('res').classList.toggle('stale',computedKey!==key());
+}
+$('go').addEventListener('click',()=>{calc();$('res').scrollIntoView({behavior:'smooth',block:'start'})});
+$('now').addEventListener('click',()=>{
+  const d=new Date(),h=d.getHours(),m=d.getMinutes();
+  const setSmooth=(el,v,n)=>{
+    const H=el.firstElementChild.offsetHeight;
+    el.scrollTo({top:(2*n+v)*H,behavior:'smooth'});
+  };
+  setSmooth($('wh'),h,24);
+  setSmooth($('wm'),m,60);
+});
+/* ---------- Edit values sheet ---------- */
+$('rows').innerHTML=NAMES.map((nm,i)=>`
+  <div class="d"><div class="n">${nm}</div><div class="ctl">
+    <div class="g"><button type="button" data-i="${i}" data-s="-60" aria-label="${nm} minus 1 hour">−</button>
+      <input inputmode="numeric" id="h${i}" data-i="${i}" aria-label="${nm} hours"><span class="u">h</span>
+      <button type="button" data-i="${i}" data-s="60" aria-label="${nm} plus 1 hour">+</button></div>
+    <div class="g"><button type="button" data-i="${i}" data-s="-5" aria-label="${nm} minus 5 minutes">−</button>
+      <input inputmode="numeric" id="m${i}" data-i="${i}" aria-label="${nm} minutes"><span class="u">m</span>
+      <button type="button" data-i="${i}" data-s="5" aria-label="${nm} plus 5 minutes">+</button></div>
+  </div></div>`).join('');
+function sync(i){$('h'+i).value=Math.floor(dur[i]/60);$('m'+i).value=dur[i]%60}
+function syncAll(){NAMES.forEach((_,i)=>sync(i))}
+function changed(){save();checkStale()}
+function readInputs(){
+  NAMES.forEach((_,i)=>{
+    const h=Math.min(23,Math.max(0,parseInt($('h'+i).value,10)||0));
+    const m=Math.min(59,Math.max(0,parseInt($('m'+i).value,10)||0));
+    dur[i]=h*60+m;
+  });
+}
+$('rows').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-s]');if(!b)return;
+  const i=+b.dataset.i;
+  dur[i]=Math.min(1439,Math.max(0,dur[i]+ +b.dataset.s));
+  sync(i);changed();
+});
+$('rows').addEventListener('change',e=>{
+  const i=+e.target.dataset.i;if(isNaN(i))return;
+  const h=Math.min(23,Math.max(0,parseInt($('h'+i).value,10)||0));
+  const m=Math.min(59,Math.max(0,parseInt($('m'+i).value,10)||0));
+  dur[i]=h*60+m;sync(i);changed();
+});
+$('rows').addEventListener('focusin',e=>{if(e.target.tagName==='INPUT')e.target.select()});
+const openSheet=()=>{syncAll();$('ov').classList.add('on');$('sheet').classList.add('on')};
+const closeSheet=()=>{$('ov').classList.remove('on');$('sheet').classList.remove('on')};
+$('edit').addEventListener('click',openSheet);
+$('ov').addEventListener('click',closeSheet);
+$('done').addEventListener('click',closeSheet);
+$('saveDefault').addEventListener('click',()=>{
+  readInputs();
+  customDefaults=dur.slice();
+  try{
+    localStorage.setItem('dt_default_dur',JSON.stringify(customDefaults));
+  }catch(e){
+    return;
+  }
+  save();
+  syncAll();
+  checkStale();
+});
+$('reset').addEventListener('click',()=>{
+  dur=customDefaults?customDefaults.slice():DEF.slice();
+  syncAll();
+  changed();
+});
+setNow();
+syncAll();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .catch(error => {
+        console.error('Service worker registration failed:', error);
+      });
+  });
+}
+</script>
+</body>
+</html>
