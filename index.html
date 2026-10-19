@@ -265,11 +265,13 @@ $('saveDefault').addEventListener('click',()=>{
   save();
   syncAll();
   checkStale();
+  closeSheet();
 });
 $('reset').addEventListener('click',()=>{
   dur=customDefaults?customDefaults.slice():DEF.slice();
   syncAll();
   changed();
+  closeSheet();
 });
 setNow();
 syncAll();
