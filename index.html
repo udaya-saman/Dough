@@ -104,7 +104,7 @@ main{max-width:480px;margin:-40px auto 0;padding:0 16px calc(env(safe-area-inset
 <body>
 <header>
   <h1><i>🍕</i>Dough Timing</h1>
-  <p>Set the start time, then tap CHANGE.</p>
+  <p>Set the start time, then tap CHECK.</p>
 </header>
 <main>
   <section class="card" aria-label="Start time">
@@ -117,14 +117,14 @@ main{max-width:480px;margin:-40px auto 0;padding:0 16px calc(env(safe-area-inset
     </div>
   </section>
   <div class="actions">
-    <button class="go" id="go" type="button">CHANGE</button>
+    <button class="go" id="go" type="button">CHECK</button>
     <button class="edit" id="edit" type="button" aria-label="Edit CHANGE values">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>
     </button>
   </div>
   <section id="res" aria-live="polite">
     <h2>Ready at<small id="from"></small></h2>
-    <p class="hint">Time or values changed. Tap CHANGE to update.</p>
+    <p class="hint">Time or values changed. Tap CHECK to update.</p>
     <div class="list" id="list"></div>
   </section>
 </main>
